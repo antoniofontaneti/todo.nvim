@@ -48,7 +48,7 @@ local function win_config(opts)
 	local posx, posy = calculate_position(opts.position)
 
 	local col = math.floor((vim.o.columns - width) * posx)
-	local row = math.floor((vim.o.line - height) * posy)
+	local row = math.floor((vim.o.lines - height) * posy)
 
 	return {
 		relative = "editor",
@@ -69,7 +69,7 @@ local function open_floating_file(opts)
 	local expanded_path = expand_path(opts.target_file)
 
 	if vim.fn.filereadable(expanded_path) == 0 then
-		vim.notify("todo file does not exist at directory:" .. expanded_path, vim.log.levels.ERROR)
+		vim.notify("todo file does not exist at directory: " .. expanded_path, vim.log.levels.ERROR)
 		return
 	end
 
