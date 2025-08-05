@@ -8,6 +8,7 @@ local default_opts = {
 	width = 0.8,
 	height = 0.8,
 	position = "center",
+	auto_save = true,
 }
 
 local function expand_path(path)
@@ -69,7 +70,7 @@ local function open_floating_file(opts)
 	local expanded_path = expand_path(opts.target_file)
 
 	if vim.fn.filereadable(expanded_path) == 0 then
-		vim.notify("todo file does not exist at directory: " .. expanded_path, vim.log.levels.ERROR)
+		vim.notify("(todo.nvim) target file does not exist at directory: " .. expanded_path, vim.log.levels.ERROR)
 		return
 	end
 
@@ -89,7 +90,15 @@ local function open_floating_file(opts)
 		silent = true,
 		callback = function()
 			if vim.api.nvim_get_option_value("modified", { buf = buf }) then
-				vim.notify("Save yor changes please", vim.log.levels.WARN)
+				if opts.auto_save then
+					vim.api.nvim_buf_call(buf, function()
+						vim.cmd("write")
+					end)
+					vim.api.nvim_win_close(0, true)
+					vim.notify("(todo.nvim) Changes saved automatically", vim.log.levels.INFO)
+				else
+					vim.notify("(todo.nvim) Save yor changes, please", vim.log.levels.WARN)
+				end
 			else
 				vim.api.nvim_win_close(0, true)
 				win = nil
@@ -99,6 +108,9 @@ local function open_floating_file(opts)
 end
 
 local function setup_user_commands(opts)
+	opts = opts or {}
+	default_opts = default_opts or {}
+
 	opts = vim.tbl_deep_extend("force", default_opts, opts)
 
 	vim.api.nvim_create_user_command("Td", function()
